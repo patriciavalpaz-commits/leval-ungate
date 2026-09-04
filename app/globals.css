@@ -1,0 +1,28 @@
+@import "tailwindcss";
+@import "../components/landing/tokens.css";
+
+/* ============================================================================
+   MODO NOCHE — la APP interna (FICHA-ARTE.md: la app usa noche por defecto;
+   la landing/onboarding/paywall/login usan el modo día de tokens.css).
+   Se aplica con la clase .tema-noche en el layout de app/app/.
+   ============================================================================ */
+.tema-noche {
+  --bg: #1c130a;
+  --surface: #271a0d;
+  --surface-2: #33220f;
+  --text-primary: #f2e6d3;
+  /* Subidos de brillo (feedback de usabilidad del usuario — se perdían en Historial/métricas) */
+  --text-secondary: #c9b696;
+  --text-tertiary: #b3a17f;
+  --accent: #e8934a;
+  --accent-2: #e8934a;
+  --shadow-1: 0 1px 2px rgb(10 6 2 / 0.35);
+  --shadow-2: 0 12px 32px -12px rgb(10 6 2 / 0.55);
+
+  /* ── SEMÁNTICOS (FICHA-ARTE.md, Modo Noche) — mismo criterio que Día: el
+     acento de marca NUNCA hace de semántico ── */
+  --success: #8fcb9b;
+  --success-bg: #22301f;
+  --danger: #e8705a;
+  --danger-bg: #33201a;
+}
