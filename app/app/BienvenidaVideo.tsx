@@ -79,8 +79,8 @@ export function BienvenidaVideo() {
               src="/video-bienvenida.mp4"
               autoPlay
               muted
+              loop
               playsInline
-              onEnded={cerrar}
               className="h-auto w-full"
             />
             <button
