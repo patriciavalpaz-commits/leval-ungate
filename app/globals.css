@@ -25,4 +25,10 @@
   --success-bg: #22301f;
   --danger: #e8705a;
   --danger-bg: #33201a;
+
+  /* ── BOTÓN PRIMARIO invertido — en Noche el botón es CLARO sobre el fondo oscuro. ── */
+  --boton-bg: #f2e6d3;
+  --boton-texto: #1c130a;
+  --boton-relieve: inset 0 1px 0 rgba(255, 255, 255, 0.55), inset 0 -2px 3px rgba(0, 0, 0, 0.15),
+    0 3px 8px rgba(0, 0, 0, 0.4);
 }

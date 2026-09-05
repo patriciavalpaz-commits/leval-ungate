@@ -134,7 +134,14 @@ export default function Buscar() {
         <p className="text-[11.5px] text-[var(--text-tertiary)] tabular-nums">ASIN B08XQPLM2K</p>
 
         <div className="mt-4 rounded-[16px] p-4" style={{ background: 'var(--success-bg)' }}>
-          <span className="mb-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-bold" style={{ background: 'var(--success)', color: 'var(--success-bg)' }}>
+          <span
+            className="mb-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-bold"
+            style={{
+              background: 'var(--success)',
+              color: 'var(--success-bg)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 2px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.18)',
+            }}
+          >
             <Check size={12} strokeWidth={3} /> AUTORIZADO PARA TU CUENTA
           </span>
           <div className="text-[32px] font-bold leading-none tabular-nums [font-family:var(--font-display)]" style={{ color: 'var(--success)' }}>+$8.40</div>
@@ -165,13 +172,14 @@ export default function Buscar() {
 
         <ExplicacionIA />
 
-        <button
+        <motion.button
           type="button"
+          whileTap={{ scale: 0.97 }}
           className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-button)] text-[14.5px] font-semibold [touch-action:manipulation]"
-          style={{ background: 'var(--accent)', color: 'var(--bg)' }}
+          style={{ background: 'var(--boton-bg)', color: 'var(--boton-texto)', boxShadow: 'var(--boton-relieve)' }}
         >
           <Plus size={16} strokeWidth={2.5} /> Agregar a mi lista
-        </button>
+        </motion.button>
       </motion.div>
     </div>
   );
