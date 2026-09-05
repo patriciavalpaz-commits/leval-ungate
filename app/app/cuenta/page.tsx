@@ -16,6 +16,16 @@ const EXTENSION_ID = 'hdnfhcmiblkfdkgajppafbpdcgbchedd';
 
 type EstadoExtension = 'revisando' | 'no_instalada' | 'conectada' | 'error';
 
+// Mensajes de diagnóstico en simple, visibles en pantalla — para no depender de que el usuario
+// abra las herramientas de desarrollador (regla del SO: nunca trasladar una tarea técnica a un
+// usuario no técnico). Quitar esta línea de detalle cuando la conexión quede confirmada.
+const DETALLE_DEBUG: Record<string, string> = {
+  sin_runtime: 'Tu Chrome no detecta la extensión en esta página — revisa que esté instalada y con el permiso de este sitio activado.',
+  sin_sesion_web: 'No se encontró tu sesión en la app — vuelve a iniciar sesión e intenta de nuevo.',
+  sin_respuesta: 'La extensión no respondió — puede que necesite recargarse en chrome://extensions.',
+  excepcion: 'Ocurrió un error inesperado al intentar conectar.',
+};
+
 declare global {
   interface Window {
     chrome?: {
@@ -34,34 +44,52 @@ declare global {
 export default function Cuenta() {
   const { tema, alternar } = useTema();
   const [estadoExtension, setEstadoExtension] = useState<EstadoExtension>('revisando');
+  const [detalleDebug, setDetalleDebug] = useState<string | null>(null);
 
   useEffect(() => {
     setEstadoExtension('no_instalada'); // se confirma "conectada" recién cuando la extensión responde
   }, []);
 
   const conectarExtension = async (): Promise<void> => {
-    const runtime = window.chrome?.runtime;
-    if (!runtime) {
-      setEstadoExtension('no_instalada');
-      return;
-    }
-    const supabase = createClient();
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) return;
-
-    runtime.sendMessage(
-      EXTENSION_ID,
-      { tipo: 'CONECTAR_SESION', accessToken: session.access_token, email: session.user.email },
-      (respuesta) => {
-        if (runtime.lastError || !respuesta?.ok) {
-          setEstadoExtension('error');
-          return;
-        }
-        setEstadoExtension('conectada');
+    setDetalleDebug(null);
+    try {
+      const runtime = window.chrome?.runtime;
+      if (!runtime) {
+        setEstadoExtension('error');
+        setDetalleDebug(DETALLE_DEBUG.sin_runtime);
+        return;
       }
-    );
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        setEstadoExtension('error');
+        setDetalleDebug(DETALLE_DEBUG.sin_sesion_web);
+        return;
+      }
+
+      runtime.sendMessage(
+        EXTENSION_ID,
+        { tipo: 'CONECTAR_SESION', accessToken: session.access_token, email: session.user.email },
+        (respuesta) => {
+          if (runtime.lastError) {
+            setEstadoExtension('error');
+            setDetalleDebug(`${DETALLE_DEBUG.sin_respuesta} (${runtime.lastError.message ?? 'sin detalle'})`);
+            return;
+          }
+          if (!respuesta?.ok) {
+            setEstadoExtension('error');
+            setDetalleDebug(DETALLE_DEBUG.sin_respuesta);
+            return;
+          }
+          setEstadoExtension('conectada');
+        }
+      );
+    } catch (e) {
+      setEstadoExtension('error');
+      setDetalleDebug(`${DETALLE_DEBUG.excepcion} (${e instanceof Error ? e.message : String(e)})`);
+    }
   };
   return (
     <div className="mx-auto w-full max-w-[480px] px-5 pb-8 pt-6">
@@ -114,6 +142,11 @@ export default function Cuenta() {
           >
             Instalar y conectar
           </button>
+        )}
+        {detalleDebug && (
+          <p className="mt-3 rounded-[10px] p-3 text-[12px] leading-snug" style={{ background: 'var(--chip-bg)' }}>
+            {detalleDebug}
+          </p>
         )}
       </div>
 
