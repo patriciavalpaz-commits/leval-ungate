@@ -1,11 +1,13 @@
-// La extensión de navegador manda aquí lo que detectó en Seller Central. Se autentica con la
-// MISMA sesión (cookies) que el usuario ya tiene abierta en la app — nunca pide contraseña
-// aparte. CORS explícito porque la extensión llama desde el origen "chrome-extension://...".
+// La extensión de navegador manda aquí lo que detectó en Seller Central. Se autentica con un
+// token que la propia app web le entrega a la extensión (chrome.runtime.sendMessage) cuando el
+// usuario hace clic en "Instalar y conectar" — los navegadores NO comparten cookies entre una
+// extensión y un sitio web, así que ese token va en el header Authorization, no en cookies.
 
 export const runtime = 'nodejs';
 
 import { NextResponse, type NextRequest } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 // Restringido a la extensión concreta — nunca '*': con credentials no se puede combinar con
 // comodín, y no queremos que cualquier sitio web arbitrario pueda leer/escribir esta ruta.
@@ -42,15 +44,36 @@ function esRestriccionValida(x: unknown): x is RestriccionDetectada {
   );
 }
 
-export async function POST(request: NextRequest) {
+async function usuarioDesdeRequest(request: NextRequest) {
+  // La extensión no comparte cookies con el navegador (los navegadores lo bloquean entre un
+  // origen "chrome-extension://" y la web, por diseño) — manda su propio token en el header.
+  const bearer = request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+  if (bearer) {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser(bearer);
+    return user;
+  }
+  // Llamadas normales del navegador (con cookies) — usado por la propia app web.
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
+  return user;
+}
+
+export async function POST(request: NextRequest) {
+  const user = await usuarioDesdeRequest(request);
 
   if (!user) {
     return conCors(NextResponse.json({ error: 'sin sesión' }, { status: 401 }));
   }
+
+  // La identidad ya quedó verificada arriba (por cookie o por el token de la extensión) — de
+  // aquí en más se usa el cliente admin, siempre acotado a ESE user.id, nunca a uno que venga
+  // del cuerpo de la petición (evita que alguien escriba en la fila de otra persona).
+  const admin = createAdminClient();
 
   let body: unknown;
   try {
@@ -77,7 +100,7 @@ export async function POST(request: NextRequest) {
     actualizado_en: new Date().toISOString(),
   }));
 
-  const { error } = await supabase.from('restricciones_cuenta').upsert(filas, { onConflict: 'profile_id,tipo,nombre' });
+  const { error } = await admin.from('restricciones_cuenta').upsert(filas, { onConflict: 'profile_id,tipo,nombre' });
   if (error) {
     return conCors(NextResponse.json({ error: 'no se pudo guardar' }, { status: 500 }));
   }
@@ -86,16 +109,14 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await usuarioDesdeRequest(request);
 
   if (!user) {
     return conCors(NextResponse.json({ error: 'sin sesión' }, { status: 401 }));
   }
 
-  const { data, error } = await supabase
+  const admin = createAdminClient();
+  const { data, error } = await admin
     .from('restricciones_cuenta')
     .select('tipo, nombre, bloqueado, actualizado_en')
     .eq('profile_id', user.id)
