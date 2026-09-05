@@ -92,7 +92,7 @@ export default function Comprar() {
             type="button"
             onClick={() => router.push('/login')}
             className="mt-8 flex h-14 w-full max-w-[300px] items-center justify-center rounded-[var(--radius-button)] text-[16px] font-semibold [touch-action:manipulation]"
-            style={{ background: 'var(--accent)', color: 'var(--bg)' }}
+            style={{ background: 'var(--boton-bg)', color: 'var(--boton-texto)', boxShadow: 'var(--boton-relieve)' }}
           >
             Entrar a mi cuenta
           </button>
@@ -117,7 +117,7 @@ export default function Comprar() {
           <button
             type="button"
             className="mt-8 flex h-14 w-full max-w-[300px] items-center justify-center rounded-[var(--radius-button)] text-[15px] font-semibold [touch-action:manipulation]"
-            style={{ background: 'var(--accent)', color: 'var(--bg)' }}
+            style={{ background: 'var(--boton-bg)', color: 'var(--boton-texto)', boxShadow: 'var(--boton-relieve)' }}
           >
             Ya pagué y no se activa
           </button>

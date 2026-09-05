@@ -140,7 +140,7 @@ function PaywallContent() {
           type="button"
           whileTap={{ scale: 0.97 }}
           onClick={() => router.push('/comprar')}
-          className="mt-6 flex h-14 w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] text-[16px] font-semibold text-[var(--bg)] shadow-[0_10px_28px_-8px_color-mix(in_oklab,var(--accent)_45%,transparent)] [touch-action:manipulation]"
+          className="mt-6 flex h-14 w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--boton-bg)] text-[16px] font-semibold text-[var(--boton-texto)] shadow-[var(--boton-relieve)] [touch-action:manipulation]"
         >
           Empezar mis 7 días gratis
         </motion.button>

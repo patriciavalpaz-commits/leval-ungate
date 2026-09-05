@@ -141,7 +141,7 @@ export default function Login() {
               whileTap={{ scale: 0.97 }}
               onClick={enviar}
               disabled={estado === 'enviando'}
-              className="mt-4 flex h-14 w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] text-[16px] font-semibold text-[var(--bg)] shadow-[0_8px_30px_color-mix(in_oklab,var(--accent)_25%,transparent)] disabled:opacity-60 [touch-action:manipulation]"
+              className="mt-4 flex h-14 w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--boton-bg)] text-[16px] font-semibold text-[var(--boton-texto)] shadow-[var(--boton-relieve)] disabled:opacity-60 [touch-action:manipulation]"
             >
               {estado === 'enviando' ? (
                 <span className="flex items-center gap-2">
@@ -219,7 +219,7 @@ export default function Login() {
               whileTap={{ scale: 0.97 }}
               onClick={confirmarCodigo}
               disabled={verificando || codigo.length < 6}
-              className="mt-4 flex h-14 w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] text-[16px] font-semibold text-[var(--bg)] disabled:opacity-60 [touch-action:manipulation]"
+              className="mt-4 flex h-14 w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--boton-bg)] text-[16px] font-semibold text-[var(--boton-texto)] shadow-[var(--boton-relieve)] disabled:opacity-60 [touch-action:manipulation]"
             >
               {verificando ? (
                 <span className="flex items-center gap-2">

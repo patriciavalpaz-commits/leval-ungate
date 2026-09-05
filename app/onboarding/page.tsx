@@ -58,7 +58,7 @@ function BotonPrimario({
       whileTap={disabled ? undefined : { scale: 0.97 }}
       onClick={onClick}
       disabled={disabled}
-      className="flex h-[52px] w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--accent)] px-8 text-[16px] font-semibold text-[var(--bg)] shadow-[0_8px_30px_color-mix(in_oklab,var(--accent)_25%,transparent)] transition-opacity duration-150 disabled:opacity-40 [touch-action:manipulation]"
+      className="flex h-[52px] w-full items-center justify-center rounded-[var(--radius-button)] bg-[var(--boton-bg)] px-8 text-[16px] font-semibold text-[var(--boton-texto)] shadow-[var(--boton-relieve)] transition-opacity duration-150 disabled:opacity-40 [touch-action:manipulation]"
     >
       {children}
     </motion.button>

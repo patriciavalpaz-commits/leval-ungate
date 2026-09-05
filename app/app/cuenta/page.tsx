@@ -138,7 +138,7 @@ export default function Cuenta() {
             type="button"
             onClick={conectarExtension}
             className="mt-4 flex h-11 w-full items-center justify-center rounded-[var(--radius-button)] text-[13.5px] font-semibold [touch-action:manipulation]"
-            style={{ background: 'var(--accent)', color: 'var(--bg)' }}
+            style={{ background: 'var(--boton-bg)', color: 'var(--boton-texto)', boxShadow: 'var(--boton-relieve)' }}
           >
             Instalar y conectar
           </button>
