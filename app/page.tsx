@@ -5,7 +5,8 @@
 // el CTA primario lleva a /comprar (placeholder hasta tener el link real de Hotmart, Sesión 6).
 
 import Image from 'next/image';
-import { Lock, Activity, PackageX, TrendingDown, Search, ShieldCheck, Rss, History } from 'lucide-react';
+import { Lock, Activity, PackageX, TrendingDown, Search, ShieldCheck, Rss, History, Puzzle, Smartphone } from 'lucide-react';
+import { motion } from 'motion/react';
 import { Hero } from '@/components/landing/Hero';
 import { LogoMark } from '@/components/landing/Logo';
 import { Problema } from '@/components/landing/Problema';
@@ -18,11 +19,52 @@ import { Garantia } from '@/components/landing/Garantia';
 import { Faq } from '@/components/landing/Faq';
 import { CtaFinal } from '@/components/landing/CtaFinal';
 import { FooterLegal } from '@/components/landing/FooterLegal';
-import { StickyCtaMobile } from '@/components/landing/ui';
+import { StickyCtaMobile, SectionShell, Kicker, IconChip, useReveal, VIEWPORT_ONCE } from '@/components/landing/ui';
 
 // Modelo 1 (hard paywall, B2B — decidido en ESTADO.md): el CTA lleva directo al checkout.
 const CTA_HREF = '/comprar';
 const CTA_LABEL = 'Empezar mis 7 días gratis';
+
+// "Cómo se usa" — los 2 accesos REALES de hoy, nunca una app móvil que no existe (61).
+// Flush con Solución (misma elevación 'base'): se leen como un mismo bloque.
+function ComoSeUsa() {
+  const { contenedor, item } = useReveal();
+  return (
+    <SectionShell elevacion="base" flush="top" compacta ariaLabel="Cómo se usa">
+      <motion.div variants={contenedor} initial="hidden" whileInView="visible" viewport={VIEWPORT_ONCE}>
+        <motion.div variants={item} className="mx-auto max-w-[620px] text-center">
+          <Kicker>CÓMO SE USA</Kicker>
+          <h2 className="text-balance text-[24px] font-bold leading-[1.15] text-[var(--text-primary)] [font-family:var(--font-display)] md:text-[28px]">
+            Úsala donde tú estés
+          </h2>
+        </motion.div>
+        <div className="mx-auto mt-8 grid max-w-[620px] grid-cols-1 gap-4 sm:grid-cols-2">
+          <motion.div
+            variants={item}
+            className="rounded-[var(--radius-card)] border border-[color-mix(in_oklab,var(--text-tertiary)_15%,transparent)] bg-[var(--surface)] p-5"
+          >
+            <IconChip icon={Puzzle} />
+            <h3 className="mt-3 text-[15px] font-semibold text-[var(--text-primary)]">Extensión de Chrome</h3>
+            <p className="mt-1 text-[13.5px] leading-snug text-[var(--text-secondary)]">
+              Se conecta sola a tu cuenta de Seller Central para leer qué puedes vender —{' '}
+              <span className="font-medium text-[var(--text-primary)]">nunca vemos tu contraseña</span> de Amazon.
+            </p>
+          </motion.div>
+          <motion.div
+            variants={item}
+            className="rounded-[var(--radius-card)] border border-[color-mix(in_oklab,var(--text-tertiary)_15%,transparent)] bg-[var(--surface)] p-5"
+          >
+            <IconChip icon={Smartphone} />
+            <h3 className="mt-3 text-[15px] font-semibold text-[var(--text-primary)]">Desde cualquier dispositivo</h3>
+            <p className="mt-1 text-[13.5px] leading-snug text-[var(--text-secondary)]">
+              Abre la web en tu computadora o tu celular para ver tu Sello de Cuenta — sin instalar nada más.
+            </p>
+          </motion.div>
+        </div>
+      </motion.div>
+    </SectionShell>
+  );
+}
 
 export default function LandingLevalUngate() {
   return (
@@ -102,24 +144,11 @@ export default function LandingLevalUngate() {
         }
       />
 
-      {/* Insignia de confianza: la extensión es real y ya funciona — Chrome únicamente por
-          ahora (honesto, 61-INTEGRIDAD-DE-LANZAMIENTO: nunca prometer navegadores sin probar).
-          Responde la objeción típica de este avatar: "¿le doy mi contraseña de Amazon a esto?" */}
-      <div className="mx-auto flex max-w-[780px] items-center justify-center gap-3 px-5 py-8">
-        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface)] shadow-[var(--shadow-1)]" aria-hidden="true">
-          <svg width="20" height="20" viewBox="0 0 48 48">
-            <circle cx="24" cy="24" r="10" fill="#fff" />
-            <circle cx="24" cy="24" r="8" fill="#4285F4" />
-            <path fill="#EA4335" d="M24 4a20 20 0 0 1 17.32 10H24a10 10 0 0 0-8.66 5L6.68 9.5A20 20 0 0 1 24 4Z" />
-            <path fill="#FBBC05" d="M6.68 9.5 15.34 24.5a10 10 0 0 0 4.33 8.5L10.34 49A20 20 0 0 1 6.68 9.5Z" />
-            <path fill="#34A853" d="M41.32 14 24 44l-8.66-15a10 10 0 0 0 17.32-5H44a20 20 0 0 1-2.68 15Z" />
-          </svg>
-        </span>
-        <p className="text-[13.5px] text-[var(--text-secondary)]">
-          Se conecta con una <span className="font-semibold text-[var(--text-primary)]">extensión de Chrome</span> —
-          se instala en 1 minuto, nunca te pedimos tu contraseña de Amazon.
-        </p>
-      </div>
+      {/* Cómo se usa — honesto (61-INTEGRIDAD-DE-LANZAMIENTO): solo los 2 accesos reales de
+          hoy (extensión de Chrome + la web desde cualquier dispositivo), NUNCA una "app móvil"
+          que no existe. Responde la objeción típica de este avatar: "¿le doy mi contraseña de
+          Amazon a esto?". Flush con Solución de arriba: son un mismo bloque visual. */}
+      <ComoSeUsa />
 
       {/* 5. LA APP POR DENTRO — placeholders honestos (app interna aún no construida) */}
       <AppPorDentro
