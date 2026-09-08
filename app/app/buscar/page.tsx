@@ -9,20 +9,48 @@
 
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { Search, Check, AlertTriangle, Plus, ScanLine, Sun, Moon, Sparkles } from 'lucide-react';
+import { Search, Check, X, AlertTriangle, Plus, ScanLine, Sun, Moon, Sparkles, RefreshCw } from 'lucide-react';
 import { useTema } from '../ThemeProvider';
 
-// Datos ya calculados de este resultado (semilla hoy; vendrán de Keepa+extensión en la Sesión 6).
-// La IA solo los traduce a una frase — nunca los genera ni los recalcula (30-INTEGRACION-IA.md).
+// Datos ya calculados de este resultado (ganancia/ROI/riesgo: semilla hoy, vendrán de Keepa —
+// pendiente, en pausa por el usuario). El SEMÁFORO (autorizado/bloqueado) SÍ es real: se cruza
+// la categoría contra lo que la extensión detectó de verdad en Seller Central (ver useEffect
+// más abajo) — ya no es un valor inventado. La IA solo traduce a frase — nunca calcula (30).
 const RESULTADO = {
   producto: 'Cargador Inalámbrico 15W — Anker',
-  autorizado: true,
+  categoria: 'Electrónicos y accesorios',
   ganancia: '+$8.40',
   roi: '34%',
   velocidad: 'Rápida',
   riesgo: 'Bajo',
   competidores: '6 vendedores',
 };
+
+interface Restriccion {
+  tipo: 'categoria' | 'marca';
+  nombre: string;
+  bloqueado: boolean;
+  actualizado_en: string;
+}
+
+function haceCuanto(fechaIso: string): string {
+  const minutos = Math.round((Date.now() - new Date(fechaIso).getTime()) / 60000);
+  if (minutos < 1) return 'hace un momento';
+  if (minutos < 60) return `hace ${minutos} min`;
+  const horas = Math.round(minutos / 60);
+  if (horas < 24) return `hace ${horas} h`;
+  const dias = Math.round(horas / 24);
+  return `hace ${dias} día${dias === 1 ? '' : 's'}`;
+}
+
+// Cruza la categoría del producto contra lo que la extensión detectó como bloqueado — texto
+// simple, sin depender de IDs de categoría de Amazon (que solo llegan con Keepa conectado).
+function verificarSemaforo(categoria: string, restricciones: Restriccion[]) {
+  const coincidencia = restricciones.find(
+    (r) => r.bloqueado && categoria.toLowerCase().includes(r.nombre.toLowerCase())
+  );
+  return { bloqueado: Boolean(coincidencia), nombreBloqueo: coincidencia?.nombre };
+}
 
 function ExplicacionIA() {
   const [estado, setEstado] = useState<'cargando' | 'lista' | 'oculta'>('cargando');
@@ -79,6 +107,26 @@ function ExplicacionIA() {
 export default function Buscar() {
   const [query, setQuery] = useState('');
   const { tema, alternar } = useTema();
+  const [restricciones, setRestricciones] = useState<Restriccion[] | null>(null);
+
+  useEffect(() => {
+    let vivo = true;
+    fetch('/api/extension/sync')
+      .then((r) => (r.ok ? r.json() : { restricciones: [] }))
+      .then((data: { restricciones?: Restriccion[] }) => {
+        if (vivo) setRestricciones(data.restricciones ?? []);
+      })
+      .catch(() => vivo && setRestricciones([]));
+    return () => {
+      vivo = false;
+    };
+  }, []);
+
+  // Mientras no sabemos qué detectó la extensión, no afirmamos nada — ver abajo (estado "cargando").
+  const { bloqueado, nombreBloqueo } = restricciones ? verificarSemaforo(RESULTADO.categoria, restricciones) : { bloqueado: false, nombreBloqueo: undefined };
+  const ultimaSincronizacion = restricciones && restricciones.length > 0
+    ? restricciones.reduce((mas, r) => (r.actualizado_en > mas ? r.actualizado_en : mas), restricciones[0].actualizado_en)
+    : null;
 
   return (
     <div className="mx-auto w-full max-w-[480px] px-5 pb-8 pt-6">
@@ -130,36 +178,73 @@ export default function Buscar() {
           </span>
           <span className="text-[11px] text-[var(--text-tertiary)]">hace 2 minutos</span>
         </div>
-        <p className="text-[14px] font-semibold leading-snug">Cargador Inalámbrico 15W — Anker</p>
-        <p className="text-[11.5px] text-[var(--text-tertiary)] tabular-nums">ASIN B08XQPLM2K</p>
+        <p className="text-[14px] font-semibold leading-snug">{RESULTADO.producto}</p>
+        <p className="text-[11.5px] text-[var(--text-tertiary)] tabular-nums">
+          ASIN B08XQPLM2K · {RESULTADO.categoria}
+        </p>
 
-        <div className="mt-4 rounded-[16px] p-4" style={{ background: 'var(--success-bg)' }}>
-          <span
-            className="mb-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-bold"
-            style={{
-              background: 'var(--success)',
-              color: 'var(--success-bg)',
-              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 2px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.18)',
-            }}
-          >
-            <Check size={12} strokeWidth={3} /> AUTORIZADO PARA TU CUENTA
-          </span>
-          <div className="text-[32px] font-bold leading-none tabular-nums [font-family:var(--font-display)]" style={{ color: 'var(--success)' }}>+$8.40</div>
-          <p className="mt-1 text-[12.5px] text-[var(--text-secondary)]">
-            ganancia neta por unidad, tarifas de Amazon ya descontadas
-          </p>
-          <div className="mt-4 grid grid-cols-3 gap-2">
-            {[
-              ['ROI', '34%'],
-              ['Buy Box', '$24.99'],
-              ['Venta', 'Rápida'],
-            ].map(([label, value]) => (
-              <div key={label} className="rounded-[12px] bg-[var(--surface-2)] px-2 py-2 text-center">
-                <div className="text-[9.5px] font-semibold uppercase tracking-[0.05em] text-[var(--text-tertiary)]">{label}</div>
-                <div className="text-[13.5px] font-bold tabular-nums">{value}</div>
-              </div>
-            ))}
+        {restricciones === null ? (
+          <div className="mt-4 space-y-2 rounded-[16px] p-4" style={{ background: 'var(--surface-2)' }}>
+            <div className="h-5 w-[70%] animate-pulse rounded-full" style={{ background: 'var(--chip-bg)' }} />
+            <div className="h-8 w-[40%] animate-pulse rounded-full" style={{ background: 'var(--chip-bg)' }} />
           </div>
+        ) : bloqueado ? (
+          <div className="mt-4 rounded-[16px] p-4" style={{ background: 'var(--danger-bg)' }}>
+            <span
+              className="mb-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-bold"
+              style={{
+                background: 'var(--danger)',
+                color: 'var(--danger-bg)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 2px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.18)',
+              }}
+            >
+              <X size={12} strokeWidth={3} /> BLOQUEADO PARA TU CUENTA
+            </span>
+            <p className="mt-1 text-[15px] font-semibold" style={{ color: 'var(--danger)' }}>
+              Necesitas autorización de Amazon
+            </p>
+            <p className="mt-1 text-[12.5px] text-[var(--text-secondary)]">
+              Tu cuenta necesita autorización para vender en la categoría{' '}
+              <strong>{nombreBloqueo}</strong> — comprar este producto no te conviene todavía.
+            </p>
+          </div>
+        ) : (
+          <div className="mt-4 rounded-[16px] p-4" style={{ background: 'var(--success-bg)' }}>
+            <span
+              className="mb-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-bold"
+              style={{
+                background: 'var(--success)',
+                color: 'var(--success-bg)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 2px rgba(0,0,0,0.15), 0 2px 6px rgba(0,0,0,0.18)',
+              }}
+            >
+              <Check size={12} strokeWidth={3} /> AUTORIZADO PARA TU CUENTA
+            </span>
+            <div className="text-[32px] font-bold leading-none tabular-nums [font-family:var(--font-display)]" style={{ color: 'var(--success)' }}>{RESULTADO.ganancia}</div>
+            <p className="mt-1 text-[12.5px] text-[var(--text-secondary)]">
+              ganancia neta por unidad, tarifas de Amazon ya descontadas
+            </p>
+            <div className="mt-4 grid grid-cols-3 gap-2">
+              {[
+                ['ROI', RESULTADO.roi],
+                ['Buy Box', '$24.99'],
+                ['Venta', RESULTADO.velocidad],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-[12px] bg-[var(--surface-2)] px-2 py-2 text-center">
+                  <div className="text-[9.5px] font-semibold uppercase tracking-[0.05em] text-[var(--text-tertiary)]">{label}</div>
+                  <div className="text-[13.5px] font-bold tabular-nums">{value}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Fecha real de la última lectura de tu cuenta de Amazon (extensión) — nunca en vivo */}
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-[var(--text-tertiary)]">
+          <RefreshCw size={11} />
+          {ultimaSincronizacion
+            ? `Datos de tu cuenta: ${haceCuanto(ultimaSincronizacion)}`
+            : 'Conecta la extensión en Cuenta para verificar tu cuenta real'}
         </div>
 
         <div className="mt-3 flex items-center gap-3 rounded-[14px] bg-[var(--surface-2)] px-4 py-3">
