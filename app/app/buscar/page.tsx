@@ -52,16 +52,26 @@ function verificarSemaforo(categoria: string, restricciones: Restriccion[]) {
   return { bloqueado: Boolean(coincidencia), nombreBloqueo: coincidencia?.nombre };
 }
 
-function ExplicacionIA() {
+function ExplicacionIA({ autorizado }: { autorizado: boolean }) {
   const [estado, setEstado] = useState<'cargando' | 'lista' | 'oculta'>('cargando');
   const [texto, setTexto] = useState('');
 
   useEffect(() => {
     let vivo = true;
+    // El semáforo (autorizado) es el dato REAL cruzado con la extensión — la IA solo lo
+    // traduce a frase, nunca lo decide (30-INTEGRACION-IA.md).
     fetch('/api/explicar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(RESULTADO),
+      body: JSON.stringify({
+        producto: RESULTADO.producto,
+        autorizado,
+        ganancia: RESULTADO.ganancia,
+        roi: RESULTADO.roi,
+        velocidad: RESULTADO.velocidad,
+        riesgo: RESULTADO.riesgo,
+        competidores: RESULTADO.competidores,
+      }),
     })
       .then((r) => r.json())
       .then((data: { disponible: boolean; texto?: string }) => {
@@ -77,7 +87,7 @@ function ExplicacionIA() {
     return () => {
       vivo = false;
     };
-  }, []);
+  }, [autorizado]);
 
   if (estado === 'oculta') return null;
 
@@ -255,7 +265,7 @@ export default function Buscar() {
           </div>
         </div>
 
-        <ExplicacionIA />
+        {restricciones !== null && <ExplicacionIA autorizado={!bloqueado} />}
 
         <motion.button
           type="button"
