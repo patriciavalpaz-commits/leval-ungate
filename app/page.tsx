@@ -102,6 +102,25 @@ export default function LandingLevalUngate() {
         }
       />
 
+      {/* Insignia de confianza: la extensión es real y ya funciona — Chrome únicamente por
+          ahora (honesto, 61-INTEGRIDAD-DE-LANZAMIENTO: nunca prometer navegadores sin probar).
+          Responde la objeción típica de este avatar: "¿le doy mi contraseña de Amazon a esto?" */}
+      <div className="mx-auto flex max-w-[780px] items-center justify-center gap-3 px-5 py-8">
+        <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--surface)] shadow-[var(--shadow-1)]" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="10" fill="#fff" />
+            <circle cx="24" cy="24" r="8" fill="#4285F4" />
+            <path fill="#EA4335" d="M24 4a20 20 0 0 1 17.32 10H24a10 10 0 0 0-8.66 5L6.68 9.5A20 20 0 0 1 24 4Z" />
+            <path fill="#FBBC05" d="M6.68 9.5 15.34 24.5a10 10 0 0 0 4.33 8.5L10.34 49A20 20 0 0 1 6.68 9.5Z" />
+            <path fill="#34A853" d="M41.32 14 24 44l-8.66-15a10 10 0 0 0 17.32-5H44a20 20 0 0 1-2.68 15Z" />
+          </svg>
+        </span>
+        <p className="text-[13.5px] text-[var(--text-secondary)]">
+          Se conecta con una <span className="font-semibold text-[var(--text-primary)]">extensión de Chrome</span> —
+          se instala en 1 minuto, nunca te pedimos tu contraseña de Amazon.
+        </p>
+      </div>
+
       {/* 5. LA APP POR DENTRO — placeholders honestos (app interna aún no construida) */}
       <AppPorDentro
         tituloMarked="Tu [acento]bitácora de caza[/acento] de productos"
